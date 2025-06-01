@@ -2,7 +2,6 @@
   "name": "course-scheduler-frontend",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "homepage": "https://chhhhhzh.github.io/SE_project_front",
   "scripts": {
     "dev": "vite",
@@ -17,6 +16,7 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@types/node": "^22.15.21",
     "@vitejs/plugin-vue": "^5.2.2",
     "@vue/tsconfig": "^0.7.0",
     "gh-pages": "^6.3.0",

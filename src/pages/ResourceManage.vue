@@ -5,7 +5,7 @@
       <div class="search-actions">
         <el-input
           v-model="searchId"
-          placeholder="请输入教室编号"
+          placeholder="请输入教室相关信息"
           clearable
           style="width: 200px"
         />
@@ -17,8 +17,14 @@
 
     <el-card class="table-card">
       <el-table :data="filteredClassroomList" border style="width: 100%;">
-        <el-table-column prop="id" label="教室编号" width="180" />
+        <el-table-column label="教室编号" width="220">
+          <template #default="scope">
+            {{ scope.row.campus }}{{ scope.row.building }}{{ scope.row.roomNumber }}
+          </template>
+        </el-table-column>
         <el-table-column prop="campus" label="校区" />
+        <el-table-column prop="building" label="楼宇" />
+        <el-table-column prop="roomNumber" label="房间号" />
         <el-table-column prop="capacity" label="容量" />
         <el-table-column label="操作" width="220">
           <template #default="scope">
@@ -32,11 +38,14 @@
     <!-- 添加 / 修改教室弹窗 -->
     <el-dialog v-model="dialogVisible" :title="isEditing ? '修改教室' : '添加教室'" width="500px">
       <el-form :model="form" label-width="80px">
-        <el-form-item label="教室编号">
-          <el-input v-model="form.id" :disabled="isEditing" />
-        </el-form-item>
         <el-form-item label="校区">
           <el-input v-model="form.campus" />
+        </el-form-item>
+        <el-form-item label="楼宇">
+          <el-input v-model="form.building" />
+        </el-form-item>
+        <el-form-item label="房间号">
+          <el-input v-model="form.roomNumber" type="number" :disabled="isEditing" />
         </el-form-item>
         <el-form-item label="容量">
           <el-input v-model="form.capacity" type="number" />
@@ -51,92 +60,137 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import request from '../utils/request';
 
 interface Classroom {
-  id: string;
+  classroomId?: number;
   campus: string;
+  building: string;
+  roomNumber: number;
   capacity: number;
 }
 
-const classroomList = ref<Classroom[]>([
-  { id: '东二101', campus: '紫金港', capacity: 50 },
-  { id: '东二202', campus: '紫金港', capacity: 80 },
-]);
-
+const classroomList = ref<Classroom[]>([]);
 const dialogVisible = ref(false);
 const isEditing = ref(false);
-const form = ref<Classroom>({ id: '', campus: '', capacity: 0 });
+const form = ref<Classroom>({
+  campus: '',
+  building: '',
+  roomNumber: 0,
+  capacity: 0
+});
 
-// 搜索功能相关
 const searchId = ref('');
 const filteredClassroomList = computed(() =>
-  classroomList.value.filter(c => c.id.includes(searchId.value))
+  classroomList.value.filter(c =>
+    `${c.campus}${c.building}${c.roomNumber}`.includes(searchId.value)
+  )
 );
 
-const handleSearch = () => {
-  // computed 已自动响应
+const fetchClassrooms = async () => {
+  try {
+    const res = await request.get('/classroom/query', {
+      params: { keyword: '' }
+    });
+    console.log('✅ 教室接口返回值:', res);
+    classroomList.value = res.data || [];
+  } catch (err) {
+    console.error('❌ 获取教室失败:', err);
+    ElMessage.error('获取教室列表失败');
+  }
+};
+
+onMounted(fetchClassrooms);
+
+const handleSearch = async () => {
+  try {
+    const res = await request.get('/classroom/query', {
+      params: { keyword: searchId.value }
+    });
+    classroomList.value = res.data || [];
+  } catch (err) {
+    ElMessage.error('搜索失败');
+  }
 };
 
 const handleReset = () => {
   searchId.value = '';
+  fetchClassrooms();
 };
 
-// 打开添加弹窗
 const openAddDialog = () => {
   isEditing.value = false;
-  form.value = { id: '', campus: '', capacity: 0 };
+  form.value = {
+    campus: '',
+    building: '',
+    roomNumber: 0,
+    capacity: 0
+  };
   dialogVisible.value = true;
 };
 
-// 打开修改弹窗
 const openEditDialog = (item: Classroom) => {
   isEditing.value = true;
   form.value = { ...item };
   dialogVisible.value = true;
 };
 
-// 保存教室（添加或修改）
-const saveClassroom = () => {
-  if (!form.value.id || !form.value.campus || !form.value.capacity) {
+const saveClassroom = async () => {
+  const { classroomId, campus, building, roomNumber, capacity } = form.value;
+  if (!campus || !building || !roomNumber || !capacity) {
     ElMessage.warning('请填写完整信息');
     return;
   }
-  if (isEditing.value) {
-    const index = classroomList.value.findIndex(item => item.id === form.value.id);
-    if (index !== -1) {
-      classroomList.value[index] = { ...form.value };
+
+  try {
+    if (isEditing.value && classroomId != null) {
+      await request.put('/classroom/modify', {
+        classroomId,
+        newCampus: campus,
+        newCapacity: capacity,
+        newBuilding: building
+      });
       ElMessage.success('修改成功');
+    } else {
+      await request.post('/classroom/add', {
+        campus,
+        building,
+        roomNumber,
+        capacity
+      });
+      ElMessage.success('添加成功');
     }
-  } else {
-    const exists = classroomList.value.some(item => item.id === form.value.id);
-    if (exists) {
-      ElMessage.error('教室编号已存在');
-      return;
-    }
-    classroomList.value.push({ ...form.value });
-    ElMessage.success('添加成功');
+    dialogVisible.value = false;
+    fetchClassrooms();
+  } catch (err) {
+    ElMessage.error('保存失败');
   }
-  dialogVisible.value = false;
 };
 
 // 删除教室
-const deleteClassroom = (item: Classroom) => {
-  ElMessageBox.confirm(
-    `确定要删除教室 "${item.id}" 吗？`,
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    }
-  ).then(() => {
-    classroomList.value = classroomList.value.filter(c => c.id !== item.id);
+const deleteClassroom = async (item: Classroom) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除教室 ${item.campus}${item.building}${item.roomNumber} 吗？`,
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    );
+
+    await request.delete('/classroom/delete', {
+      params: { classroomId: item.classroomId }
+    });
+
     ElMessage.success('删除成功');
-  }).catch(() => {
+    fetchClassrooms();
+  } catch {
     ElMessage.info('已取消删除');
-  });
+  }
 };
 </script>
 

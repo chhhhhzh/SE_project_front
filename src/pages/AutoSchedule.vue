@@ -15,26 +15,41 @@
     </div>
   </div>
 </template>
-  
+
 <script setup lang="ts">
 import { ref } from 'vue';
+import { ElMessage } from 'element-plus';
+import request from '../utils/request';
 
-// 模拟排课时间
 const lastScheduleTime = ref('暂无排课记录');
 const loading = ref(false);
 
-// 模拟调后端接口
-const handleAutoSchedule = () => {
+// 定义返回类型接口
+interface AutoScheduleResponse {
+  code: number;
+  message: string;
+  [key: string]: any; // 如果有其他字段，也能兼容
+}
+
+const handleAutoSchedule = async () => {
   loading.value = true;
-  setTimeout(() => {
-    const now = new Date();
-    lastScheduleTime.value = now.toLocaleString();
+  try {
+    const res: AutoScheduleResponse = await request.post('/schedule/auto');
+    if (res.code === 200) {
+      const now = new Date();
+      lastScheduleTime.value = now.toLocaleString();
+      ElMessage.success(res.message || '自动排课成功');
+    } else {
+      ElMessage.error(res.message || '排课失败');
+    }
+  } catch (err) {
+    ElMessage.error('请求失败，请检查后端服务');
+  } finally {
     loading.value = false;
-    alert('排课成功！');
-  }, 1500);
+  }
 };
 </script>
-  
+
 <style scoped>
 .auto-schedule {
   width: 100%;
@@ -42,12 +57,11 @@ const handleAutoSchedule = () => {
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  justify-content: center; /* ⭐ 居中页面 */
+  justify-content: center;
   background-color: #f5f7fa;
   padding: 40px;
 }
 
-/* 内容块，卡片式设计 */
 .schedule-card {
   background: white;
   padding: 50px 60px;
@@ -57,7 +71,6 @@ const handleAutoSchedule = () => {
   width: 480px;
 }
 
-/* 标题 */
 h1 {
   color: #0d47a1;
   font-size: 28px;
@@ -65,14 +78,12 @@ h1 {
   margin-bottom: 20px;
 }
 
-/* 时间文本 */
 .schedule-time {
   font-size: 16px;
   color: #666;
   margin-bottom: 30px;
 }
 
-/* 按钮特效 */
 .schedule-btn {
   width: 100%;
   font-size: 18px;

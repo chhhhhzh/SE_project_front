@@ -1,12 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import AutoSchedule from '../pages/AutoSchedule.vue'
-import ManualAdjust from '../pages/ManualAdjust.vue' // 教师申请审核
-import AdminManualAdjust from '../pages/AdminManualAdjust.vue' // 管理员手动调整
+import ManualAdjust from '../pages/ManualAdjust.vue'
+import AdminManualAdjust from '../pages/AdminManualAdjust.vue' 
 import ResourceManage from '../pages/ResourceManage.vue'
 import ResultQuery from '../pages/ResultQuery.vue'
 
-// ✅ 新增教师申请页面（懒加载）
 const TeacherRequest = () => import('../pages/TeacherRequest.vue')
 
 const routes = [
