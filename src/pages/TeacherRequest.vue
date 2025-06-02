@@ -9,7 +9,7 @@
         </el-form-item>
 
         <el-form-item label="教师ID" prop="teacher">
-          <el-input v-model="form.teacher" placeholder="请输入教师姓名" />
+          <el-input v-model="form.teacher" placeholder="请输入教师ID" />
         </el-form-item>
 
         <el-form-item label="申请原因" prop="reason">
@@ -51,28 +51,33 @@ const rules = {
 
 const formRef = ref<FormInstance>();
 
-// 提交表单
+// 提交表单（已修复逻辑判断）
 const handleSubmit = async () => {
   if (!formRef.value) return;
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
         const res = await request.post('/application/add', form.value);
-        ElMessage.success('申请提交成功');
-        resetForm();
+
+        // ✅ 判断后端返回的 code 是否为 200
+        if (res.code === 200) {
+          ElMessage.success(res.message || '申请提交成功');
+          resetForm();
+        } else {
+          ElMessage.error(res.message || '提交失败，请检查 secId 与教师ID 是否匹配');
+        }
       } catch (err: any) {
-        ElMessage.error(err?.response?.data?.message || '提交失败');
+        ElMessage.error(err?.response?.data?.message || '系统错误，提交失败');
       }
     }
   });
 };
 
+// 重置表单（使用 Element Plus 标准方法）
 const resetForm = () => {
-  form.value = {
-    secId: null,
-    reason: '',
-    teacher: ''
-  };
+  if (formRef.value) {
+    formRef.value.resetFields();
+  }
 };
 </script>
 

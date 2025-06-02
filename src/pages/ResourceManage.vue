@@ -17,7 +17,7 @@
 
     <el-card class="table-card">
       <el-table :data="filteredClassroomList" border style="width: 100%;">
-        <el-table-column label="教室编号" width="220">
+        <el-table-column label="教室总称" width="220">
           <template #default="scope">
             {{ scope.row.campus }}{{ scope.row.building }}{{ scope.row.roomNumber }}
           </template>

@@ -4,7 +4,7 @@
       <h2>教师申请审核</h2>
       <el-table :data="applications" style="width: 100%" v-loading="loading" border>
         <el-table-column prop="secId" label="sec ID" width="120" />
-        <el-table-column prop="teacher" label="教师姓名" width="140" />
+        <el-table-column prop="teacher" label="教师 ID" width="140" />
         <el-table-column prop="reason" label="申请理由" />
         <el-table-column label="处理建议">
           <template #default="scope">

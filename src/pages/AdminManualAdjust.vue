@@ -24,7 +24,7 @@
             <el-input v-model="scope.row.classroomId" size="small" />
           </template>
         </el-table-column>
-        <el-table-column prop="timeSlotIds" label="时间段ID列表">
+        <el-table-column prop="timeSlotIds" label="时间段列表">
           <template #default="scope">
             <el-input v-model="scope.row.timeSlotIdsString" size="small" />
           </template>
