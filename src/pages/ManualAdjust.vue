@@ -1,24 +1,61 @@
 <template>
   <div class="teacher-review">
     <el-card>
-      <h2>教师申请审核</h2>
-      <el-table :data="applications" style="width: 100%" v-loading="loading" border>
-        <el-table-column prop="secId" label="sec ID" width="120" />
-        <el-table-column prop="teacher" label="教师 ID" width="140" />
-        <el-table-column prop="reason" label="申请理由" />
-        <el-table-column label="处理建议">
+      <h2>教师申请审核</h2>      <el-table :data="applications" style="width: 100%" v-loading="loading" border>
+        <el-table-column prop="secId" label="Section ID" width="100" />
+        <el-table-column prop="teacherId" label="教师 ID" width="80" />
+        <el-table-column label="课程信息" width="200">
+          <template #default="scope">
+            <div>
+              <div><strong>课程ID:</strong> {{ scope.row.section?.courseId }}</div>
+              <div><strong>学期:</strong> {{ scope.row.section?.semester }} {{ scope.row.section?.year }}</div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="教室信息" width="250">
+          <template #default="scope">
+            <div v-if="scope.row.section?.classroom">
+              <div><strong>教室:</strong> {{ scope.row.section.classroom.campus }}-{{ scope.row.section.classroom.building }}-{{ scope.row.section.classroom.roomNumber }}</div>
+              <div><strong>类型:</strong> {{ scope.row.section.classroom.type }} (容量: {{ scope.row.section.classroom.capacity }})</div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="reason" label="申请理由" width="200" />
+        <el-table-column label="当前状态" width="100">
+          <template #default="scope">
+            <el-tag :type="getStatusType(scope.row.finalDecision)">
+              {{ getStatusText(scope.row.finalDecision) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="处理建议" width="200">
           <template #default="scope">
             <el-input
               v-model="suggestionMap[scope.row.secId]"
               placeholder="请输入建议"
               size="small"
+              :disabled="scope.row.suggestion !== null"
             />
           </template>
         </el-table-column>
         <el-table-column label="操作" width="200">
           <template #default="scope">
-            <el-button type="success" size="small" @click="handleProcess(scope.row.secId, true)">通过</el-button>
-            <el-button type="danger" size="small" @click="handleProcess(scope.row.secId, false)">拒绝</el-button>
+            <el-button 
+              type="success" 
+              size="small" 
+              @click="handleProcess(scope.row.secId, true)"
+              :disabled="scope.row.suggestion !== null"
+            >
+              通过
+            </el-button>
+            <el-button 
+              type="danger" 
+              size="small" 
+              @click="handleProcess(scope.row.secId, false)"
+              :disabled="scope.row.suggestion !== null"
+            >
+              拒绝
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -97,6 +134,18 @@ const handleProcess = async (secId: number, approved: boolean) => {
   } catch (err) {
     ElMessage.error('处理失败，请稍后重试')
   }
+}
+
+// 获取状态标签类型
+const getStatusType = (finalDecision: boolean | null) => {
+  if (finalDecision === null) return ''
+  return finalDecision ? 'success' : 'danger'
+}
+
+// 获取状态文本
+const getStatusText = (finalDecision: boolean | null) => {
+  if (finalDecision === null) return '待处理'
+  return finalDecision ? '已通过' : '已拒绝'
 }
 
 onMounted(() => {

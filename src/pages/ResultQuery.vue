@@ -28,12 +28,12 @@
           <tbody>
             <tr v-for="period in 12" :key="period">
               <td class="period-label">第{{ period }}节</td>
-              <td v-for="dayIndex in 7" :key="dayIndex" class="cell">
-                <div class="course" v-if="courseMap[dayIndex]?.[period]">
+              <td v-for="dayIndex in 7" :key="dayIndex" class="cell">                <div class="course" v-if="courseMap[dayIndex]?.[period]">
                   <div class="course-title">{{ courseMap[dayIndex][period].courseTitle }}</div>
                   <div class="course-info">
-                    <span>secId: {{ courseMap[dayIndex][period].secId }}</span><br />
-                    <span>教室Id: {{ courseMap[dayIndex][period].classroomId }}</span>
+                    <span>Section ID: {{ courseMap[dayIndex][period].secId }}</span><br />
+                    <span>老师: {{ courseMap[dayIndex][period].teacherName }}</span><br />
+                    <span>地点: {{ courseMap[dayIndex][period].classroomLocation }}</span>
                   </div>
                 </div>
               </td>
@@ -89,7 +89,9 @@ const buildCourseMap = (sections: any[]) => {
   for (let d = 1; d <= 7; d++) courseMap[d] = {}
   // 遍历每条数据
   for (const sec of sections) {
-    for (const slotId of sec.timeSlotIds) {
+    // 解析 timeSlotIds 字符串为数组
+    const timeSlotIds = JSON.parse(sec.timeSlotIds)
+    for (const slotId of timeSlotIds) {
       const day = Math.floor((slotId - 1) / 12) + 1
       const period = ((slotId - 1) % 12) + 1
       if (!courseMap[day]) courseMap[day] = {}
