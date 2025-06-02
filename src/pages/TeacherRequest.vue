@@ -89,11 +89,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { ElMessage, FormInstance } from 'element-plus';
-import request from '@/utils/request';
-import { getTeacherApplications, submitTeacherApplication } from '@/api/application';
-import { getSectionDetail, SectionDetail } from '@/api/section'; // 导入新的 API 函数和类型
+import { ref, computed } from 'vue';
+import { ElMessage } from 'element-plus';
+import type { FormInstance } from 'element-plus';
+import { getTeacherApplications, submitTeacherApplication } from '../api/application';
+import { getSectionDetail } from '../api/section';
+import type { SectionDetail } from '../api/section';
 
 // 表单数据模型
 const form = ref({
@@ -113,8 +114,8 @@ const fetchSectionDetail = async () => {
     try {
       const res = await getSectionDetail(form.value.secId);
       // 检查 res.data 是否存在并且不是一个空对象
-      if (res.code === 200 && res.data && Object.keys(res.data).length > 0) {
-        sectionDetail.value = res.data as SectionDetail; // 明确类型转换
+      if (res.data.code === 200 && res.data.data && Object.keys(res.data.data).length > 0) {
+        sectionDetail.value = res.data.data;
         sectionExists.value = true;
         sectionDetailVisible.value = true;
       } else {
@@ -182,11 +183,21 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
-        const res = await submitTeacherApplication(form.value);
+        // 确保表单数据不为 null
+        if (form.value.secId === null || form.value.teacherId === null) {
+          ElMessage.error('请填写完整的表单信息');
+          return;
+        }
+        
+        const res = await submitTeacherApplication({
+          secId: form.value.secId,
+          teacherId: form.value.teacherId,
+          reason: form.value.reason
+        });
 
         // 判断后端返回的 code 是否为 200
-        if (res.code === 200) {
-          ElMessage.success(res.message || '申请提交成功');
+        if (res.data.code === 200) {
+          ElMessage.success(res.data.message || '申请提交成功');
           resetForm();
           
           // 如果当前查询的教师ID与提交的ID相同，则自动刷新列表
@@ -194,7 +205,7 @@ const handleSubmit = async () => {
             fetchTeacherApplications();
           }
         } else {
-          ElMessage.error(res.message || '提交失败，请检查 secId 与教师ID 是否匹配');
+          ElMessage.error(res.data.message || '提交失败，请检查 secId 与教师ID 是否匹配');
         }
       } catch (err: any) {
         ElMessage.error(err?.response?.data?.message || '系统错误，提交失败');
@@ -226,20 +237,20 @@ const fetchTeacherApplications = async () => {
   
   try {
     const res = await getTeacherApplications(searchTeacherId.value);
-    if (res.code === 200) {
+    if (res.data.code === 200) {
       // 从响应中获取申请记录
-      applicationHistory.value = res.data.items || [];
+      applicationHistory.value = res.data.data.items || [];
       
       // 数据已经包含所需信息，不需要额外处理
       
-      total.value = res.data.total || 0;
+      total.value = res.data.data.total || 0;
       hasSearched.value = true;
       
       if (applicationHistory.value.length === 0) {
         ElMessage.info('该教师暂无申请记录');
       }
     } else {
-      ElMessage.error(res.message || '获取历史记录失败');
+      ElMessage.error(res.data.message || '获取历史记录失败');
     }
   } catch (err: any) {
     ElMessage.error(err?.response?.data?.message || '获取历史记录失败');
@@ -274,11 +285,11 @@ const getApprovalStatusText = (row: any) => {
 };
 
 // 日期格式化
-const formatDate = (timestamp: string | number) => {
-  if (!timestamp) return '';
-  const date = new Date(timestamp);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-};
+// const formatDate = (timestamp: string | number) => {
+//   if (!timestamp) return '';
+//   const date = new Date(timestamp);
+//   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+// };
 </script>
 
 <style scoped>

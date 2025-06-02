@@ -77,7 +77,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { fetchAdminSections, modifySection } from '@/api/schedule'
+import { fetchAdminSections, modifySection } from '../api/schedule'
 
 const filters = reactive({
   courseTitle: '',

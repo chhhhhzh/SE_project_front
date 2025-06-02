@@ -77,7 +77,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import request from '@/utils/request'
+import request from '../utils/request'
 
 const applications = ref([])
 const total = ref(0)
