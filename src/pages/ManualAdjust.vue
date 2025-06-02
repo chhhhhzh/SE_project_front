@@ -38,6 +38,7 @@
             />
           </template>
         </el-table-column>
+        <el-table-column prop="adminId" label="管理员ID" width="100" />
         <el-table-column label="操作" width="200">
           <template #default="scope">
             <el-button 
