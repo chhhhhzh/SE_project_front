@@ -1,15 +1,22 @@
 <template>
   <div class="layout">
     <aside class="sidebar">
-      <h2>课程安排子系统</h2>
-      <nav>
-        <router-link to="/resource-manage">教学资源管理</router-link>
-        <router-link to="/auto-schedule">自动排课</router-link>
-        <router-link to="/manual-adjust/teacher-request">教师申请</router-link>
-        <router-link to="/manual-adjust/teacher-review">教师申请审核</router-link>
-        <router-link to="/manual-adjust/admin-adjust">管理员手动调整</router-link>
-        <router-link to="/result-query">排课结果查询</router-link>
-      </nav>
+      <div class="menu-group">
+        <div class="menu-title" @click="toggleMainMenu">
+          课程安排子系统
+          <span class="arrow-icon" :class="{ rotated: mainMenuOpen }">▼</span>
+        </div>
+        <transition name="fade">
+          <nav v-show="mainMenuOpen" class="submenu">
+            <router-link to="/resource-manage">教学资源管理</router-link>
+            <router-link to="/auto-schedule">自动排课</router-link>
+            <router-link to="/manual-adjust/teacher-request">教师申请</router-link>
+            <router-link to="/manual-adjust/teacher-review">教师申请审核</router-link>
+            <router-link to="/manual-adjust/admin-adjust">管理员手动调整</router-link>
+            <router-link to="/result-query">排课结果查询</router-link>
+          </nav>
+        </transition>
+      </div>
     </aside>
 
     <main class="content">
@@ -41,6 +48,7 @@ import { ref } from 'vue'
 
 const username = ref('管理员')  // 这里可以以后从后端接口动态拿到
 const dropdownVisible = ref(false)
+const mainMenuOpen = ref(true)
 
 // 点击头像区域切换下拉框
 const toggleDropdown = () => {
@@ -51,6 +59,11 @@ const toggleDropdown = () => {
 const logout = () => {
   alert('退出登录')
   // 这里可以添加真正的退出逻辑，比如跳转到登录页
+}
+
+// 切换课程安排子系统菜单
+const toggleMainMenu = () => {
+  mainMenuOpen.value = !mainMenuOpen.value
 }
 </script>
 
