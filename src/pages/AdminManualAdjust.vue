@@ -96,14 +96,14 @@ const fetchData = async () => {
       page: page.value,
       pageSize: 10,
     })
-    tableData.value = res.data.records.map((item: any) => ({
+    tableData.value = res.data.data.records.map((item: any) => ({
       ...item,
       newClassroomId: '', // 新增字段用于输入新教室ID
       timeSlotIdsString: Array.isArray(item.timeSlotIds) 
         ? item.timeSlotIds.join(',') 
         : (typeof item.timeSlotIds === 'string' ? item.timeSlotIds : ''),
     }))
-    total.value = res.data.total
+    total.value = res.data.data.total
   } catch (err) {
     ElMessage.error('加载数据失败')
   }

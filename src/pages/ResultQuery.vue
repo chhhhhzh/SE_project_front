@@ -69,8 +69,7 @@ const handleSearch = async () => {
     ElMessage.warning('教师ID和教室ID不能同时为空')
     return
   }
-  try {
-    const res = await request.get('/search/section', {
+  try {    const res = await request.get('/search/section', {
       params: {
         teacherId: filters.teacherId || undefined,
         classroomId: filters.classroomId || undefined,
@@ -78,7 +77,7 @@ const handleSearch = async () => {
         semester: filters.semester
       }
     })
-    buildCourseMap(res.data || [])
+    buildCourseMap(res.data.data || [])
   } catch (err) {
     ElMessage.error('查询失败')
   }

@@ -26,21 +26,23 @@ const loading = ref(false);
 
 // 定义返回类型接口
 interface AutoScheduleResponse {
-  code: number;
-  message: string;
-  [key: string]: any; // 如果有其他字段，也能兼容
+  data: {
+    code: number;
+    message: string;
+    [key: string]: any; // 如果有其他字段，也能兼容
+  };
+  [key: string]: any;
 }
 
 const handleAutoSchedule = async () => {
-  loading.value = true;
-  try {
+  loading.value = true;  try {
     const res: AutoScheduleResponse = await request.post('/schedule/auto');
-    if (res.code === 200) {
+    if (res.data.code === 200) {
       const now = new Date();
       lastScheduleTime.value = now.toLocaleString();
-      ElMessage.success(res.message || '自动排课成功');
+      ElMessage.success(res.data.message || '自动排课成功');
     } else {
-      ElMessage.error(res.message || '排课失败');
+      ElMessage.error(res.data.message || '排课失败');
     }
   } catch (err) {
     ElMessage.error('请求失败，请检查后端服务');

@@ -94,7 +94,7 @@ const fetchClassrooms = async () => {
       params: { keyword: '' }
     });
     console.log('✅ 教室接口返回值:', res);
-    classroomList.value = res.data || [];
+    classroomList.value = res.data.data || [];
   } catch (err) {
     console.error('❌ 获取教室失败:', err);
     ElMessage.error('获取教室列表失败');
@@ -108,7 +108,7 @@ const handleSearch = async () => {
     const res = await request.get('/classroom/query', {
       params: { keyword: searchId.value }
     });
-    classroomList.value = res.data || [];
+    classroomList.value = res.data.data || [];
   } catch (err) {
     ElMessage.error('搜索失败');
   }
